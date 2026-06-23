@@ -49,6 +49,16 @@
     },
     {
       "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst conversation = Array.isArray(data) ? data[0] : data;\nif (!conversation?.id) throw new Error('Conversa nao retornou id pelo Supabase. Verifique URL, service role e tabela conversations.');\nreturn [{ json: conversation }];"
+      },
+      "id": "c119d16e-2277-4194-8d18-a3177d3c6a62",
+      "name": "Extrair conversa",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{$env.SUPABASE_URL}}/rest/v1/messages",
         "sendHeaders": true,
@@ -62,17 +72,17 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, direction: 'inbound', message_type: $node['Normalizar mensagem'].json.message_type, content: $node['Normalizar mensagem'].json.content }) }}"
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Extrair conversa'].json.id, direction: 'inbound', message_type: $node['Normalizar mensagem'].json.message_type, content: $node['Normalizar mensagem'].json.content }) }}"
       },
       "id": "29d32f8f-ef55-4b89-a356-dd74f0db7f17",
       "name": "Gravar mensagem inbound",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [760, 300]
+      "position": [880, 300]
     },
     {
       "parameters": {
-        "jsCode": "const conversation = $node['Buscar ou criar conversa'].json[0];\nconst input = $node['Normalizar mensagem'].json;\nconst prompt = `Voce e uma atendente da Clinica Sorriso Prime, uma clinica odontologica.\\n\\nRegras:\\n- Responda em portugues do Brasil, de forma profissional, curta e humanizada.\\n- Se o cliente pedir preco/orcamento, explique que depende do procedimento e ofereca avaliacao.\\n- Se pedir agendamento, peca nome, melhor dia e horario.\\n- Se pedir humano, sinalize transferencia.\\n- Se encerrar conversa, agradeca e finalize.\\n- Classifique intent como: orçamento, agendamento, dúvidas, humano ou outros.\\n- Classifique sentiment como: positivo, neutro, negativo ou urgente.\\n- Marque needs_human true quando houver urgencia, dor intensa, reclamacao ou pedido de humano.\\n\\nResponda APENAS JSON valido no formato:\\n{\\n  \"reply\": \"texto para enviar no WhatsApp\",\\n  \"intent\": \"orçamento|agendamento|dúvidas|humano|outros\",\\n  \"sentiment\": \"positivo|neutro|negativo|urgente\",\\n  \"status\": \"em_andamento|aguardando_humano|encerrada\",\\n  \"needs_human\": true\\n}\\n\\nCliente: ${input.customer_name || 'sem nome'}\\nTelefone: ${input.phone}\\nStatus atual: ${conversation.status}\\nMensagem recebida: ${input.content}`;\nreturn [{ json: { prompt } }];"
+        "jsCode": "const conversation = $node['Extrair conversa'].json;\nconst input = $node['Normalizar mensagem'].json;\nconst prompt = `Voce e uma atendente da Clinica Sorriso Prime, uma clinica odontologica.\\n\\nRegras:\\n- Responda em portugues do Brasil, de forma profissional, curta e humanizada.\\n- Se o cliente pedir preco/orcamento, explique que depende do procedimento e ofereca avaliacao.\\n- Se pedir agendamento, peca nome, melhor dia e horario.\\n- Se pedir humano, sinalize transferencia.\\n- Se encerrar conversa, agradeca e finalize.\\n- Classifique intent como: orçamento, agendamento, dúvidas, humano ou outros.\\n- Classifique sentiment como: positivo, neutro, negativo ou urgente.\\n- Marque needs_human true quando houver urgencia, dor intensa, reclamacao ou pedido de humano.\\n\\nResponda APENAS JSON valido no formato:\\n{\\n  \"reply\": \"texto para enviar no WhatsApp\",\\n  \"intent\": \"orçamento|agendamento|dúvidas|humano|outros\",\\n  \"sentiment\": \"positivo|neutro|negativo|urgente\",\\n  \"status\": \"em_andamento|aguardando_humano|encerrada\",\\n  \"needs_human\": true\\n}\\n\\nCliente: ${input.customer_name || 'sem nome'}\\nTelefone: ${input.phone}\\nStatus atual: ${conversation.status}\\nMensagem recebida: ${input.content}`;\nreturn [{ json: { prompt } }];"
       },
       "id": "4e911c4d-26fe-454b-a2cb-7b2c9778ba9b",
       "name": "Montar prompt Gemini",
@@ -114,7 +124,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{$env.SUPABASE_URL}}/rest/v1/conversations?id=eq.{{$node['Buscar ou criar conversa'].json[0].id}}",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/conversations?id=eq.{{$node['Extrair conversa'].json.id}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -148,7 +158,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, direction: 'outbound', message_type: 'text', content: $node['Tratar resposta IA'].json.reply, ai_response: $node['Tratar resposta IA'].json.reply }) }}"
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Extrair conversa'].json.id, direction: 'outbound', message_type: 'text', content: $node['Tratar resposta IA'].json.reply, ai_response: $node['Tratar resposta IA'].json.reply }) }}"
       },
       "id": "16ea083f-aa67-4ddc-9d09-d1a60130f343",
       "name": "Gravar resposta outbound",
@@ -192,7 +202,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, event_type: $json.error ? 'whatsapp_send_error' : 'message_processed', payload: { whatsapp_result: $json, ai: $node['Tratar resposta IA'].json, inbound: $node['Normalizar mensagem'].json } }) }}"
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Extrair conversa'].json.id, event_type: $json.error ? 'whatsapp_send_error' : 'message_processed', payload: { whatsapp_result: $json, ai: $node['Tratar resposta IA'].json, inbound: $node['Normalizar mensagem'].json } }) }}"
       },
       "id": "89cff144-89e5-4cd8-85fa-2e197e786a1d",
       "name": "Log agent_events",
@@ -203,7 +213,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { ok: true, conversation_id: $node['Buscar ou criar conversa'].json[0].id, reply: $node['Tratar resposta IA'].json.reply } }}"
+        "responseBody": "={{ { ok: true, conversation_id: $node['Extrair conversa'].json.id, reply: $node['Tratar resposta IA'].json.reply } }}"
       },
       "id": "ce193cd3-0e88-43f2-bad0-825348bd8539",
       "name": "Responder webhook",
@@ -215,7 +225,8 @@
   "connections": {
     "Webhook Evolution API": { "main": [[{ "node": "Normalizar mensagem", "type": "main", "index": 0 }]] },
     "Normalizar mensagem": { "main": [[{ "node": "Buscar ou criar conversa", "type": "main", "index": 0 }]] },
-    "Buscar ou criar conversa": { "main": [[{ "node": "Gravar mensagem inbound", "type": "main", "index": 0 }]] },
+    "Buscar ou criar conversa": { "main": [[{ "node": "Extrair conversa", "type": "main", "index": 0 }]] },
+    "Extrair conversa": { "main": [[{ "node": "Gravar mensagem inbound", "type": "main", "index": 0 }]] },
     "Gravar mensagem inbound": { "main": [[{ "node": "Montar prompt Gemini", "type": "main", "index": 0 }]] },
     "Montar prompt Gemini": { "main": [[{ "node": "Chamar Gemini", "type": "main", "index": 0 }]] },
     "Chamar Gemini": { "main": [[{ "node": "Tratar resposta IA", "type": "main", "index": 0 }]] },

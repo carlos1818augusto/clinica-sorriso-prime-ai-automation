@@ -41,6 +41,11 @@ create index if not exists idx_messages_conversation_created on public.messages(
 create index if not exists idx_messages_created_at on public.messages(created_at desc);
 create index if not exists idx_agent_events_conversation_created on public.agent_events(conversation_id, created_at desc);
 
+grant usage on schema public to anon, authenticated;
+grant select on public.conversations to anon, authenticated;
+grant select on public.messages to anon, authenticated;
+grant select on public.agent_events to anon, authenticated;
+
 create or replace function public.touch_conversation_updated_at()
 returns trigger
 language plpgsql
