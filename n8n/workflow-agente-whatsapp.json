@@ -1,0 +1,239 @@
+{
+  "name": "Agente WhatsApp IA - Clinica Sorriso Prime",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-sorriso-prime",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f8d6c47b-35e3-4fb0-8b1c-c45c7b24cb1a",
+      "name": "Webhook Evolution API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst data = body.data || body;\nconst key = data.key || {};\nconst message = data.message || {};\nconst pushName = data.pushName || body.pushName || null;\nconst remoteJid = key.remoteJid || data.remoteJid || body.remoteJid || '';\nconst phone = String(remoteJid).replace(/@s\\.whatsapp\\.net|@c\\.us|\\D/g, '');\nconst text = message.conversation || message.extendedTextMessage?.text || message.imageMessage?.caption || message.audioMessage?.caption || data.text || body.text || '';\nlet messageType = 'text';\nif (message.audioMessage) messageType = 'audio';\nif (message.imageMessage) messageType = 'image';\nif (!phone) throw new Error('Telefone nao encontrado no payload da Evolution API.');\nreturn [{ json: { phone, customer_name: pushName, content: text, message_type: messageType, raw: body } }];"
+      },
+      "id": "afad6d8c-c25d-48f2-83ff-73b3c7744f11",
+      "name": "Normalizar mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/conversations?on_conflict=phone",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "resolution=merge-duplicates,return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ phone: $json.phone, customer_name: $json.customer_name, status: 'em_andamento' }) }}"
+      },
+      "id": "ed9df1b8-c934-4924-aee5-272fd883db35",
+      "name": "Buscar ou criar conversa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, direction: 'inbound', message_type: $node['Normalizar mensagem'].json.message_type, content: $node['Normalizar mensagem'].json.content }) }}"
+      },
+      "id": "29d32f8f-ef55-4b89-a356-dd74f0db7f17",
+      "name": "Gravar mensagem inbound",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const conversation = $node['Buscar ou criar conversa'].json[0];\nconst input = $node['Normalizar mensagem'].json;\nconst prompt = `Voce e uma atendente da Clinica Sorriso Prime, uma clinica odontologica.\\n\\nRegras:\\n- Responda em portugues do Brasil, de forma profissional, curta e humanizada.\\n- Se o cliente pedir preco/orcamento, explique que depende do procedimento e ofereca avaliacao.\\n- Se pedir agendamento, peca nome, melhor dia e horario.\\n- Se pedir humano, sinalize transferencia.\\n- Se encerrar conversa, agradeca e finalize.\\n- Classifique intent como: orçamento, agendamento, dúvidas, humano ou outros.\\n- Classifique sentiment como: positivo, neutro, negativo ou urgente.\\n- Marque needs_human true quando houver urgencia, dor intensa, reclamacao ou pedido de humano.\\n\\nResponda APENAS JSON valido no formato:\\n{\\n  \"reply\": \"texto para enviar no WhatsApp\",\\n  \"intent\": \"orçamento|agendamento|dúvidas|humano|outros\",\\n  \"sentiment\": \"positivo|neutro|negativo|urgente\",\\n  \"status\": \"em_andamento|aguardando_humano|encerrada\",\\n  \"needs_human\": true\\n}\\n\\nCliente: ${input.customer_name || 'sem nome'}\\nTelefone: ${input.phone}\\nStatus atual: ${conversation.status}\\nMensagem recebida: ${input.content}`;\nreturn [{ json: { prompt } }];"
+      },
+      "id": "4e911c4d-26fe-454b-a2cb-7b2c9778ba9b",
+      "name": "Montar prompt Gemini",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1020, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }, contents: [{ role: 'user', parts: [{ text: $json.prompt }] }] }) }}"
+      },
+      "id": "3d8c07c2-ad7b-4bc8-b4da-9e1f12a48b53",
+      "name": "Chamar Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1280, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json;\nconst fallback = {\n  reply: 'Obrigada pelo contato com a Clinica Sorriso Prime. Vou encaminhar sua mensagem para nossa equipe e ja retornamos por aqui.',\n  intent: 'outros',\n  sentiment: 'neutro',\n  status: 'aguardando_humano',\n  needs_human: true\n};\ntry {\n  const raw = response.candidates?.[0]?.content?.parts?.[0]?.text;\n  const parsed = typeof raw === 'string' ? JSON.parse(raw) : fallback;\n  return [{ json: { ...fallback, ...parsed, gemini_raw: response } }];\n} catch (error) {\n  return [{ json: { ...fallback, gemini_error: String(error), gemini_raw: response } }];\n}"
+      },
+      "id": "dc0dac76-cf85-45f4-b891-c0ea6656f5d0",
+      "name": "Tratar resposta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1520, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/conversations?id=eq.{{$node['Buscar ou criar conversa'].json[0].id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ intent: $json.intent, sentiment: $json.sentiment, status: $json.status, needs_human: $json.needs_human }) }}"
+      },
+      "id": "384e0368-cccb-4438-8e19-c913ac39efde",
+      "name": "Atualizar conversa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, direction: 'outbound', message_type: 'text', content: $node['Tratar resposta IA'].json.reply, ai_response: $node['Tratar resposta IA'].json.reply }) }}"
+      },
+      "id": "16ea083f-aa67-4ddc-9d09-d1a60130f343",
+      "name": "Gravar resposta outbound",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.EVOLUTION_API_URL}}/message/sendText/{{$env.EVOLUTION_INSTANCE}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.EVOLUTION_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $node['Normalizar mensagem'].json.phone, text: $node['Tratar resposta IA'].json.reply }) }}"
+      },
+      "id": "9816e738-0f8a-48e6-92cb-719b63251a7d",
+      "name": "Enviar WhatsApp Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2020, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/agent_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Buscar ou criar conversa'].json[0].id, event_type: $json.error ? 'whatsapp_send_error' : 'message_processed', payload: { whatsapp_result: $json, ai: $node['Tratar resposta IA'].json, inbound: $node['Normalizar mensagem'].json } }) }}"
+      },
+      "id": "89cff144-89e5-4cd8-85fa-2e197e786a1d",
+      "name": "Log agent_events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2260, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, conversation_id: $node['Buscar ou criar conversa'].json[0].id, reply: $node['Tratar resposta IA'].json.reply } }}"
+      },
+      "id": "ce193cd3-0e88-43f2-bad0-825348bd8539",
+      "name": "Responder webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Evolution API": { "main": [[{ "node": "Normalizar mensagem", "type": "main", "index": 0 }]] },
+    "Normalizar mensagem": { "main": [[{ "node": "Buscar ou criar conversa", "type": "main", "index": 0 }]] },
+    "Buscar ou criar conversa": { "main": [[{ "node": "Gravar mensagem inbound", "type": "main", "index": 0 }]] },
+    "Gravar mensagem inbound": { "main": [[{ "node": "Montar prompt Gemini", "type": "main", "index": 0 }]] },
+    "Montar prompt Gemini": { "main": [[{ "node": "Chamar Gemini", "type": "main", "index": 0 }]] },
+    "Chamar Gemini": { "main": [[{ "node": "Tratar resposta IA", "type": "main", "index": 0 }]] },
+    "Tratar resposta IA": { "main": [[{ "node": "Atualizar conversa", "type": "main", "index": 0 }]] },
+    "Atualizar conversa": { "main": [[{ "node": "Gravar resposta outbound", "type": "main", "index": 0 }]] },
+    "Gravar resposta outbound": { "main": [[{ "node": "Enviar WhatsApp Evolution", "type": "main", "index": 0 }]] },
+    "Enviar WhatsApp Evolution": { "main": [[{ "node": "Log agent_events", "type": "main", "index": 0 }]] },
+    "Log agent_events": { "main": [[{ "node": "Responder webhook", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "b940076d-9c3c-4e75-8d12-9a20fd17ec51",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "sorriso-prime-whatsapp-ai",
+  "tags": []
+}
