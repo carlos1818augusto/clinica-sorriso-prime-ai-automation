@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background: #f5f7f8;
+  color: #172026;
+}
+
+.dark body {
+  background: #101820;
+  color: #f5f7f8;
+}
