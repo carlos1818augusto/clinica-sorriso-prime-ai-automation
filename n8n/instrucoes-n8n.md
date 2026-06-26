@@ -16,8 +16,8 @@ SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 ## Importação
 
 1. Acesse o n8n.
-2. Clique em `Workflows` > `Import from file`.
-3. Importe `n8n/workflow-agente-whatsapp.json`.
+2. No editor, abra `Barra de comandos` e escolha `Importar fluxo de trabalho a partir de um URL`.
+3. Use a URL raw do arquivo `n8n/workflow-agente-whatsapp.json` no GitHub.
 4. Abra o node `Webhook Evolution API` e copie a URL de produção.
 5. Configure essa URL como webhook da instância na Evolution API.
 6. Ative o workflow.
@@ -36,6 +36,6 @@ SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 
 ## Observações
 
-- O workflow usa a `SUPABASE_SERVICE_ROLE_KEY`; mantenha essa chave somente no servidor do n8n.
+- O workflow usa a vari?vel `SUPABASE_SERVICE_ROLE_KEY`; mantenha essa chave somente no n8n.
 - Se o Gemini falhar ou retornar JSON inválido, o workflow usa uma resposta de fallback e marca `needs_human = true`.
 - O dashboard deve usar apenas `NEXT_PUBLIC_SUPABASE_ANON_KEY`, nunca a service role.
