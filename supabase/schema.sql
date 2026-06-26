@@ -49,6 +49,7 @@ grant select on public.agent_events to anon, authenticated;
 create or replace function public.touch_conversation_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -65,6 +66,7 @@ execute function public.touch_conversation_updated_at();
 create or replace function public.touch_conversation_from_message()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   update public.conversations
