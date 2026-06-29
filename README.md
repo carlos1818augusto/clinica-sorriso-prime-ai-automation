@@ -94,7 +94,7 @@ SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 
 1. Gere uma chave em Google AI Studio.
 2. Configure `GEMINI_API_KEY` no n8n.
-3. O workflow usa o modelo `gemini-1.5-flash` com resposta JSON.
+3. O workflow usa o modelo `gemini-2.5-flash` com resposta JSON.
 
 ## Como rodar o dashboard localmente
 
