@@ -104,6 +104,31 @@ on public.agent_events for select
 to anon, authenticated
 using (true);
 
+drop policy if exists "Agent can insert conversations" on public.conversations;
+create policy "Agent can insert conversations"
+on public.conversations for insert
+to anon, authenticated
+with check (true);
+
+drop policy if exists "Agent can update conversations" on public.conversations;
+create policy "Agent can update conversations"
+on public.conversations for update
+to anon, authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Agent can insert messages" on public.messages;
+create policy "Agent can insert messages"
+on public.messages for insert
+to anon, authenticated
+with check (true);
+
+drop policy if exists "Agent can insert events" on public.agent_events;
+create policy "Agent can insert events"
+on public.agent_events for insert
+to anon, authenticated
+with check (true);
+
 do $$
 begin
   alter publication supabase_realtime add table public.conversations;

@@ -31,8 +31,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
-            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "apikey", "value": "={{$vars.SUPABASE_ANON_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_ANON_KEY}}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "resolution=merge-duplicates,return=representation" }
           ]
@@ -49,7 +49,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\nconst conversation = Array.isArray(data) ? data[0] : data;\nif (!conversation?.id) throw new Error('Conversa nao retornou id pelo Supabase. Verifique URL, service role e tabela conversations.');\nreturn [{ json: conversation }];"
+        "jsCode": "const data = $input.first().json;\nconst conversation = Array.isArray(data) ? data[0] : data;\nif (!conversation?.id) throw new Error('Conversa nao retornou id pelo Supabase. Verifique SUPABASE_URL, SUPABASE_ANON_KEY e tabela conversations.');\nreturn [{ json: conversation }];"
       },
       "id": "c119d16e-2277-4194-8d18-a3177d3c6a62",
       "name": "Extrair conversa",
@@ -64,8 +64,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
-            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "apikey", "value": "={{$vars.SUPABASE_ANON_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_ANON_KEY}}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=representation" }
           ]
@@ -128,8 +128,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
-            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "apikey", "value": "={{$vars.SUPABASE_ANON_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_ANON_KEY}}" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=representation" }
           ]
@@ -151,8 +151,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
-            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "apikey", "value": "={{$vars.SUPABASE_ANON_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_ANON_KEY}}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -195,8 +195,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
-            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_SERVICE_ROLE_KEY}}" },
+            { "name": "apikey", "value": "={{$vars.SUPABASE_ANON_KEY}}" },
+            { "name": "Authorization", "value": "=Bearer {{$vars.SUPABASE_ANON_KEY}}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },

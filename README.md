@@ -59,9 +59,8 @@ docs/vibe-coding-journal.md
 5. Copie:
    - Project URL
    - anon public key
-   - service role key
 
-O dashboard usa a anon key. O n8n usa a service role key.
+O dashboard e o n8n usam a anon key. Para este teste técnico, o schema libera escrita controlada via RLS para o agente.
 
 ## Como importar o workflow no n8n
 
@@ -75,7 +74,7 @@ EVOLUTION_API_KEY=sua-chave-evolution
 EVOLUTION_INSTANCE=sorriso-prime
 GEMINI_API_KEY=sua-chave-gemini
 SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+SUPABASE_ANON_KEY=sua-chave-anon-publica
 ```
 
 4. Copie a URL de produção do node `Webhook Evolution API`.

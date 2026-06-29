@@ -10,7 +10,7 @@ EVOLUTION_API_KEY=sua-chave-evolution
 EVOLUTION_INSTANCE=sorriso-prime
 GEMINI_API_KEY=sua-chave-gemini
 SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+SUPABASE_ANON_KEY=sua-chave-anon-publica
 ```
 
 ## Importação
@@ -36,6 +36,6 @@ SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 
 ## Observações
 
-- O workflow usa a vari?vel `SUPABASE_SERVICE_ROLE_KEY`; mantenha essa chave somente no n8n.
+- O workflow usa a variavel `SUPABASE_ANON_KEY`; para este teste, o Supabase tem politicas RLS permitindo escrita do agente.
 - Se o Gemini falhar ou retornar JSON inválido, o workflow usa uma resposta de fallback e marca `needs_human = true`.
-- O dashboard deve usar apenas `NEXT_PUBLIC_SUPABASE_ANON_KEY`, nunca a service role.
+- O dashboard usa apenas `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
