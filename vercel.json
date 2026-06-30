@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm --dir dashboard install --frozen-lockfile",
+  "buildCommand": "pnpm --dir dashboard build",
+  "outputDirectory": "dashboard/.next"
+}
