@@ -2,6 +2,15 @@
 
 Solução completa para um teste técnico de Analista de IA e Automações. O projeto cria um agente de atendimento odontológico no WhatsApp usando Evolution API, n8n, Gemini, Supabase/Postgres e um dashboard web em Next.js.
 
+## Links da entrega
+
+- GitHub: https://github.com/carlos1818augusto/clinica-sorriso-prime-ai-automation
+- Dashboard publicado: https://dashboard-seven-liart-80.vercel.app/dashboard
+- Workflow exportável: `n8n/workflow-agente-whatsapp.json`
+- Banco: Supabase/Postgres com tabelas `conversations`, `messages` e `agent_events`
+- Evolution API: instância `sorriso-prime` publicada no Railway e conectada ao WhatsApp
+- Checklist e texto pronto para envio: `ENTREGA.md`
+
 ## Arquitetura
 
 ```mermaid
@@ -89,6 +98,8 @@ SUPABASE_ANON_KEY=sua-chave-anon-publica
 4. Garanta que eventos de mensagens recebidas estejam habilitados.
 5. Teste enviando uma mensagem para o número conectado.
 
+Neste ambiente de entrega, a Evolution API foi publicada no Railway, a instância `sorriso-prime` foi conectada ao WhatsApp e o webhook aponta para o n8n Cloud.
+
 ## Como configurar o Gemini
 
 1. Gere uma chave em Google AI Studio.
@@ -170,15 +181,17 @@ O diário com prompts, decisões técnicas, erros comuns e correções está em 
 
 ## Checklist final para envio no WhatsApp
 
-- [ ] Repositório GitHub público ou com acesso liberado.
-- [ ] `supabase/schema.sql` executado no Supabase.
-- [ ] Workflow importado e ativo no n8n.
-- [ ] Evolution API conectada ao WhatsApp.
-- [ ] Variáveis do n8n configuradas.
-- [ ] Dashboard publicado na Vercel.
-- [ ] Variáveis da Vercel configuradas.
-- [ ] Teste real feito via WhatsApp.
-- [ ] Supabase com conversas e mensagens reais.
-- [ ] Prints salvos.
+- [x] Repositório GitHub público ou com acesso liberado.
+- [x] `supabase/schema.sql` executado no Supabase.
+- [x] Workflow importado e ativo no n8n.
+- [x] Evolution API conectada ao WhatsApp.
+- [x] Variáveis do n8n configuradas.
+- [x] Dashboard publicado na Vercel.
+- [x] Variáveis da Vercel configuradas.
+- [x] Teste real feito via WhatsApp.
+- [x] Supabase com conversas e mensagens reais.
+- [ ] Prints salvos, se quiser anexar além do vídeo.
 - [ ] Vídeo de até 5 minutos gravado.
 - [ ] Link do GitHub, link da Vercel e vídeo prontos para envio.
+
+Use `ENTREGA.md` para copiar o texto final de envio no WhatsApp.

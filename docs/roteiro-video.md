@@ -44,6 +44,10 @@ Mostrar:
 - conversa registrada no Supabase;
 - dashboard atualizando.
 
+Se quiser uma mensagem mais simples para evitar ruído na gravação, use:
+
+> "Olá, quero agendar uma avaliação odontológica."
+
 ## 3:30 - 4:30 | Dashboard
 
 Mostrar:
@@ -59,4 +63,10 @@ Mostrar:
 
 Falar:
 
-> "A solução está preparada para deploy: Supabase com SQL versionado, workflow n8n exportável, dashboard Next.js pronto para Vercel e documentação completa para reproduzir o ambiente."
+> "A solução está publicada e funcional: o WhatsApp está conectado pela Evolution API, o n8n orquestra o agente com Gemini, o Supabase guarda os dados reais e o dashboard em Next.js na Vercel mostra métricas e histórico das conversas."
+
+Finalize mostrando rapidamente:
+
+- GitHub público do projeto.
+- URL pública do dashboard.
+- `ENTREGA.md` com o texto pronto para envio no WhatsApp.

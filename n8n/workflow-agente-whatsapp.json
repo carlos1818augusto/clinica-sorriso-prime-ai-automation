@@ -202,7 +202,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ conversation_id: $node['Extrair conversa'].json.id, event_type: $json.error ? 'whatsapp_send_error' : 'message_processed', payload: { whatsapp_result: $json, ai: $node['Tratar resposta IA'].json, inbound: $node['Normalizar mensagem'].json } }) }}"
+        "jsonBody": "={{ (() => { const result = JSON.parse(JSON.stringify($json || {})); if (result.error?.options?.headers?.apikey) result.error.options.headers.apikey = '[redacted]'; if (result.error?.config?.headers?.apikey) result.error.config.headers.apikey = '[redacted]'; return JSON.stringify({ conversation_id: $node['Extrair conversa'].json.id, event_type: result.error ? 'whatsapp_send_error' : 'message_processed', payload: { whatsapp_result: result, ai: $node['Tratar resposta IA'].json, inbound: $node['Normalizar mensagem'].json } }); })() }}"
       },
       "id": "89cff144-89e5-4cd8-85fa-2e197e786a1d",
       "name": "Log agent_events",

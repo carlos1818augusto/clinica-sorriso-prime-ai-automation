@@ -16,7 +16,7 @@ Prompts derivados durante o desenvolvimento:
 ## Decisões técnicas
 
 - **Upsert por telefone:** evita conversas duplicadas para o mesmo número.
-- **Service role apenas no n8n:** o dashboard usa chave pública anon.
+- **Anon key no teste técnico:** o dashboard e o n8n usam anon key com RLS ajustado para facilitar a demonstração.
 - **Realtime no dashboard:** as páginas recarregam dados quando Supabase emite mudanças.
 - **Gemini retornando JSON:** facilita atualizar `intent`, `sentiment`, `status` e `needs_human`.
 - **Fallback de IA:** se Gemini falhar, o cliente recebe uma resposta educada e a conversa vai para humano.
@@ -28,8 +28,9 @@ Prompts derivados durante o desenvolvimento:
 - **Gemini retorna texto fora de JSON:** manter `responseMimeType: application/json` e fallback no node `Tratar resposta IA`.
 - **Realtime não atualiza:** confirmar se as tabelas foram adicionadas à publication `supabase_realtime`.
 - **Dashboard vazio:** gerar dados pelo fluxo real do n8n, não inserir mock manual no frontend.
-- **Erro 401 no Supabase via n8n:** conferir `SUPABASE_SERVICE_ROLE_KEY` e headers `apikey` e `Authorization`.
+- **Erro 401 no Supabase via n8n:** conferir `SUPABASE_ANON_KEY`, permissões RLS e headers `apikey` e `Authorization`.
 - **Evolution API não envia mensagem:** confirmar `EVOLUTION_API_URL`, `EVOLUTION_INSTANCE` e endpoint `/message/sendText/{instance}`.
+- **QR Code da Evolution expirado:** gerar novo QR em `/instance/connect/{instance}` e escanear imediatamente.
 
 ## Melhorias futuras
 

@@ -39,7 +39,7 @@ flowchart LR
 
 ## Segurança
 
-- A chave `SUPABASE_SERVICE_ROLE_KEY` fica somente no n8n.
 - O dashboard usa `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- As tabelas têm RLS com políticas de leitura para o dashboard.
-- Escritas operacionais são feitas pelo n8n usando service role.
+- O n8n usa `SUPABASE_ANON_KEY` neste teste técnico para gravar dados via REST.
+- As tabelas têm RLS habilitado e políticas liberadas para o escopo do teste.
+- Em produção, a recomendação é proteger o dashboard com autenticação e mover escritas do agente para uma chave de servidor ou endpoint backend.
